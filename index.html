@@ -975,22 +975,43 @@ const POCKETBASE_URL = "https://GANTI-DENGAN-URL-POCKETBASE-ANDA.pockethost.io";
 const PB_COLLECTION   = "kv_store";
 const pb = (typeof PocketBase !== "undefined") ? new PocketBase(POCKETBASE_URL) : null;
 if (pb) pb.autoCancellation(false);
+const PB_URL_BELUM_DIGANTI = POCKETBASE_URL.includes("GANTI-DENGAN-URL");
+
+// Cari record berdasarkan key. Pakai getList (bukan getFirstListItem) + sort
+// by -updated supaya kalau ada record duplikat (mis. field "key" lupa di-set
+// unique, atau ada race saat pembuatan pertama), kita selalu ambil versi
+// TERBARU — bukan versi acak/lama yang bisa bikin device lain seolah "tidak update".
+async function pbFindRecord(key){
+  const res = await pb.collection(PB_COLLECTION).getList(1, 1, {
+    filter: pb.filter("key = {:k}", {k:key}),
+    sort: "-updated"
+  });
+  return res.items[0] || null;
+}
 
 // Shim: meniru interface window.storage (get/set/delete dengan key + shared)
 // supaya seluruh kode di bawah (yang sudah ditulis memakai window.storage)
 // tetap berjalan tanpa perlu diubah satu per satu.
+//
+// PENTING: get/set/delete di sini SENGAJA MELEMPAR ERROR (throw) kalau gagal,
+// bukan diam-diam mengembalikan null — karena kode pemanggilnya (uploadHeroBg,
+// saveToStorage, dst) sudah ditulis memakai try/catch dan menampilkan pesan
+// sukses jika tidak ada exception. Kalau error ditelan di sini, pengguna akan
+// melihat "✓ tersimpan" padahal sebenarnya gagal tersimpan ke server — itulah
+// sebabnya sebelumnya perubahan tidak muncul di perangkat lain.
 const pbStorage = {
   async get(key, shared){
     if(shared === false){
       const v = localStorage.getItem("t4d_local_"+key);
       return v ? {key, value:v, shared:false} : null;
     }
-    if(!pb) return null; // SDK PocketBase belum siap
+    if(!pb) throw new Error("PocketBase SDK belum termuat.");
+    if(PB_URL_BELUM_DIGANTI) throw new Error("POCKETBASE_URL belum diganti dari nilai bawaan.");
     try{
-      const rec = await pb.collection(PB_COLLECTION).getFirstListItem(`key="${key}"`);
-      return {key, value: rec.value, shared:true};
+      const rec = await pbFindRecord(key);
+      return rec ? {key, value: rec.value, shared:true} : null; // null wajar: record memang belum pernah dibuat
     }catch(e){
-      return null; // record belum ada -> dianggap kosong
+      throw new Error("Gagal mengambil data dari PocketBase: " + pbErrMsg(e));
     }
   },
   async set(key, value, shared){
@@ -998,19 +1019,27 @@ const pbStorage = {
       localStorage.setItem("t4d_local_"+key, value);
       return {key, value, shared:false};
     }
-    if(!pb) return null; // SDK PocketBase belum siap
+    if(!pb) throw new Error("PocketBase SDK belum termuat (cek koneksi internet / CDN diblokir).");
+    if(PB_URL_BELUM_DIGANTI) throw new Error("POCKETBASE_URL masih placeholder — ganti dulu dengan URL server PocketBase Anda.");
+    let rec = null;
+    try{ rec = await pbFindRecord(key); }catch(e){ /* anggap belum ada, coba create di bawah */ }
     try{
-      let rec = null;
-      try{ rec = await pb.collection(PB_COLLECTION).getFirstListItem(`key="${key}"`); }catch(e){}
       if(rec){
         await pb.collection(PB_COLLECTION).update(rec.id, {value});
       }else{
-        await pb.collection(PB_COLLECTION).create({key, value});
+        try{
+          await pb.collection(PB_COLLECTION).create({key, value});
+        }catch(createErr){
+          // Kemungkinan race: device lain sempat membuat record yang sama
+          // di antara pbFindRecord() dan create() di atas -> ambil ulang & update.
+          const existing = await pbFindRecord(key).catch(()=>null);
+          if(existing){ await pb.collection(PB_COLLECTION).update(existing.id, {value}); }
+          else throw createErr;
+        }
       }
       return {key, value, shared:true};
     }catch(e){
-      console.error("PocketBase set() gagal:", e);
-      return null;
+      throw new Error("Gagal menyimpan ke PocketBase: " + pbErrMsg(e));
     }
   },
   async delete(key, shared){
@@ -1018,18 +1047,24 @@ const pbStorage = {
       localStorage.removeItem("t4d_local_"+key);
       return {key, deleted:true, shared:false};
     }
-    if(!pb) return null; // SDK PocketBase belum siap
+    if(!pb) throw new Error("PocketBase SDK belum termuat.");
+    if(PB_URL_BELUM_DIGANTI) throw new Error("POCKETBASE_URL belum diganti dari nilai bawaan.");
     try{
-      let rec = null;
-      try{ rec = await pb.collection(PB_COLLECTION).getFirstListItem(`key="${key}"`); }catch(e){}
+      const rec = await pbFindRecord(key);
       if(rec) await pb.collection(PB_COLLECTION).delete(rec.id);
       return {key, deleted:true, shared:true};
     }catch(e){
-      console.error("PocketBase delete() gagal:", e);
-      return null;
+      throw new Error("Gagal menghapus di PocketBase: " + pbErrMsg(e));
     }
   }
 };
+// Ambil pesan error PocketBase yang informatif (status HTTP + pesan server),
+// bukan cuma "[object Object]" seperti kalau error di-stringify langsung.
+function pbErrMsg(e){
+  if(e && e.response && e.response.message) return `${e.status||""} ${e.response.message}`.trim();
+  if(e && e.message) return e.message;
+  return String(e);
+}
 // Timpa/definisikan window.storage supaya seluruh kode lama otomatis
 // memakai PocketBase sebagai backend-nya.
 window.storage = pbStorage;
@@ -2242,7 +2277,8 @@ async function uploadHeroBg(file){
         lastHeroBgPayload = heroBgImage;
         if(statusEl) statusEl.textContent = "✓ Background tersimpan dan langsung tampil untuk semua pengunjung.";
       }catch(e){
-        if(statusEl) statusEl.textContent = "Gagal menyimpan ke penyimpanan bersama — coba gambar yang lebih kecil.";
+        console.error("Gagal upload hero bg:", e);
+        if(statusEl) statusEl.textContent = "Gagal menyimpan ke penyimpanan bersama: " + (e.message || e);
       }
     } else {
       if(statusEl) statusEl.textContent = "Penyimpanan tidak tersedia — background hanya berlaku selama sesi ini.";
@@ -2261,7 +2297,8 @@ async function removeHeroBg(){
       lastHeroBgPayload = null;
       if(statusEl) statusEl.textContent = "Background dihapus, kembali ke gradasi bawaan.";
     }catch(e){
-      if(statusEl) statusEl.textContent = "Background dihapus di tampilan ini, namun gagal sinkron ke penyimpanan.";
+      console.error("Gagal hapus hero bg:", e);
+      if(statusEl) statusEl.textContent = "Dihapus di tampilan ini, namun gagal sinkron ke penyimpanan: " + (e.message || e);
     }
   }
 }
@@ -2275,7 +2312,7 @@ async function tryLoadHeroBg(){
       applyHeroBackground();
       renderHeroBgPreview();
     }
-  }catch(e){ /* belum ada background tersimpan */ }
+  }catch(e){ console.error("Gagal memuat hero bg:", e); }
 }
 
 /* ---- persistence ---- */
@@ -2300,18 +2337,33 @@ async function tryLoadFromStorage(){
     }
     storageAvailable = true;
   }catch(e){
-    if(statusEl) statusEl.innerHTML = `${ICONS.check} Penyimpanan publik aktif — perubahan Anda otomatis tersimpan dan disinkronkan berkala ke semua pengunjung.`;
-    storageAvailable = true;
+    console.error("Gagal memuat data awal:", e);
+    if(statusEl) statusEl.innerHTML = `${ICONS.warning} <b>Gagal terhubung ke PocketBase:</b> ${e.message || e}. Data yang tampil adalah data bawaan/lokal — perubahan TIDAK akan tersinkron ke pengunjung lain sampai koneksi ini diperbaiki (cek POCKETBASE_URL, status server, dan CORS).`;
+    storageAvailable = false;
   }
 }
 
+let saveQueued = false;
+let saveInFlight = false;
 async function saveToStorage(){
   if(!window.storage) return;
-  try{
-    const payload = JSON.stringify({SURAHS, PLACEHOLDER_SURAH, REFERENSI_BUKU, HADITS});
-    await window.storage.set(STORAGE_KEY, payload, true); // shared:true -> tersimpan untuk semua pengunjung
-    lastStoragePayload = payload;
-  }catch(e){ console.error("Gagal menyimpan:", e); }
+  saveQueued = true;
+  if(saveInFlight) return; // sudah ada proses simpan berjalan, permintaan ini akan otomatis ikut terkirim setelahnya
+  saveInFlight = true;
+  const statusEl = document.getElementById("adminStatusText");
+  while(saveQueued){
+    saveQueued = false;
+    try{
+      const payload = JSON.stringify({SURAHS, PLACEHOLDER_SURAH, REFERENSI_BUKU, HADITS});
+      await window.storage.set(STORAGE_KEY, payload, true); // shared:true -> tersimpan untuk semua pengunjung
+      lastStoragePayload = payload;
+      if(statusEl) statusEl.innerHTML = `${ICONS.check} Tersimpan &amp; disinkronkan ke semua pengunjung (${new Date().toLocaleTimeString('id-ID')}).`;
+    }catch(e){
+      console.error("Gagal menyimpan:", e);
+      if(statusEl) statusEl.innerHTML = `${ICONS.warning} <b>Gagal menyimpan ke PocketBase:</b> ${e.message || e}. Perubahan ini baru tersimpan di perangkat Anda — cek URL/koneksi/API Rules PocketBase, lalu coba simpan lagi.`;
+    }
+  }
+  saveInFlight = false;
 }
 
 /* ============ POLLING: sinkron hampir real-time untuk semua pengunjung ============ */
@@ -2350,8 +2402,18 @@ async function pollPublicStorage(){
       applyHeroBackground();
       renderHeroBgPreview();
     }
-  }catch(e){ /* diamkan, coba lagi di polling berikutnya */ }
+  }catch(e){
+    pollFailCount++;
+    if(pollFailCount === 3){ // baru beri tahu setelah gagal beberapa kali berturut-turut, hindari noise sesaat
+      console.error("Sinkronisasi PocketBase terus gagal:", e);
+      const statusEl = document.getElementById("adminStatusText");
+      if(statusEl) statusEl.innerHTML = `${ICONS.warning} <b>Sinkronisasi terhenti:</b> ${e.message || e}. Perubahan terbaru dari perangkat lain mungkin belum tampil.`;
+    }
+    return;
+  }
+  pollFailCount = 0;
 }
+let pollFailCount = 0;
 setInterval(pollPublicStorage, 4000);
 
 /* Realtime PocketBase: begitu ada perubahan di collection kv_store,
