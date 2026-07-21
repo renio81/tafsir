@@ -936,7 +936,103 @@
 </div>
 
 
+<script src="https://cdn.jsdelivr.net/npm/pocketbase@0.27.0/dist/pocketbase.umd.js"></script>
 <script>
+  // Fallback: kalau CDN utama gagal dimuat (mis. diblokir/offline), coba CDN cadangan.
+  if (typeof PocketBase === "undefined") {
+    document.write('<script src="https:\/\/unpkg.com\/pocketbase@0.27.0\/dist\/pocketbase.umd.js"><\/script>');
+  }
+</script>
+<script>
+  if (typeof PocketBase === "undefined") {
+    console.error("Gagal memuat PocketBase SDK dari CDN manapun. Periksa koneksi internet atau download file pocketbase.umd.js secara manual dan host sendiri, lalu ganti src script di atas.");
+  }
+</script>
+<script>
+/* =======================================================================
+   INTEGRASI POCKETBASE (https://pocketbase.io)
+   -----------------------------------------------------------------------
+   Ganti POCKETBASE_URL di bawah dengan URL server PocketBase Anda sendiri
+   (mis. hasil deploy di Fly.io/Railway, atau pockethost.io, atau server
+   Anda sendiri: https://pb.domainanda.com).
+
+   Di dashboard admin PocketBase, buat 1 collection bernama "kv_store"
+   dengan field:
+     - key    (Text, required, unique)
+     - value  (Text / atau "Editor" jika ingin field panjang tanpa batas)
+   Lalu di tab "API Rules" collection tsb, set:
+     - List/Search rule   : (kosongkan / biarkan public)  ""
+     - View rule          : ""
+     - Create rule        : ""
+     - Update rule        : ""
+     - Delete rule        : ""
+   (String kosong "" berarti publik boleh baca+tulis. Jika Anda ingin
+   hanya admin situs yang bisa menulis, ganti Create/Update/Delete rule
+   dengan aturan auth PocketBase, dan sesuaikan submitAdminLogin() untuk
+   login ke PocketBase alih-alih password statis di kode.)
+   ======================================================================= */
+const POCKETBASE_URL = "https://GANTI-DENGAN-URL-POCKETBASE-ANDA.pockethost.io";
+const PB_COLLECTION   = "kv_store";
+const pb = (typeof PocketBase !== "undefined") ? new PocketBase(POCKETBASE_URL) : null;
+if (pb) pb.autoCancellation(false);
+
+// Shim: meniru interface window.storage (get/set/delete dengan key + shared)
+// supaya seluruh kode di bawah (yang sudah ditulis memakai window.storage)
+// tetap berjalan tanpa perlu diubah satu per satu.
+const pbStorage = {
+  async get(key, shared){
+    if(shared === false){
+      const v = localStorage.getItem("t4d_local_"+key);
+      return v ? {key, value:v, shared:false} : null;
+    }
+    if(!pb) return null; // SDK PocketBase belum siap
+    try{
+      const rec = await pb.collection(PB_COLLECTION).getFirstListItem(`key="${key}"`);
+      return {key, value: rec.value, shared:true};
+    }catch(e){
+      return null; // record belum ada -> dianggap kosong
+    }
+  },
+  async set(key, value, shared){
+    if(shared === false){
+      localStorage.setItem("t4d_local_"+key, value);
+      return {key, value, shared:false};
+    }
+    if(!pb) return null; // SDK PocketBase belum siap
+    try{
+      let rec = null;
+      try{ rec = await pb.collection(PB_COLLECTION).getFirstListItem(`key="${key}"`); }catch(e){}
+      if(rec){
+        await pb.collection(PB_COLLECTION).update(rec.id, {value});
+      }else{
+        await pb.collection(PB_COLLECTION).create({key, value});
+      }
+      return {key, value, shared:true};
+    }catch(e){
+      console.error("PocketBase set() gagal:", e);
+      return null;
+    }
+  },
+  async delete(key, shared){
+    if(shared === false){
+      localStorage.removeItem("t4d_local_"+key);
+      return {key, deleted:true, shared:false};
+    }
+    if(!pb) return null; // SDK PocketBase belum siap
+    try{
+      let rec = null;
+      try{ rec = await pb.collection(PB_COLLECTION).getFirstListItem(`key="${key}"`); }catch(e){}
+      if(rec) await pb.collection(PB_COLLECTION).delete(rec.id);
+      return {key, deleted:true, shared:true};
+    }catch(e){
+      console.error("PocketBase delete() gagal:", e);
+      return null;
+    }
+  }
+};
+// Timpa/definisikan window.storage supaya seluruh kode lama otomatis
+// memakai PocketBase sebagai backend-nya.
+window.storage = pbStorage;
 
 /* ============================================================
    ICON LIBRARY — SVG modern, garis tipis, bertema islami
@@ -2257,6 +2353,12 @@ async function pollPublicStorage(){
   }catch(e){ /* diamkan, coba lagi di polling berikutnya */ }
 }
 setInterval(pollPublicStorage, 4000);
+
+/* Realtime PocketBase: begitu ada perubahan di collection kv_store,
+   langsung tarik ulang data (tidak perlu menunggu polling 4 detik). */
+try{
+  if(pb) pb.collection(PB_COLLECTION).subscribe("*", ()=>{ pollPublicStorage(); });
+}catch(e){ console.warn("PocketBase realtime tidak aktif:", e); }
 
 function refreshEverything(){
   renderSurahList(document.getElementById("surahSearch")?.value || "");
