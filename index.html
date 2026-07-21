@@ -190,8 +190,8 @@
   .panel{background:#fff;border:1px solid var(--line);border-radius:var(--radius-lg);box-shadow:var(--shadow);}
   .panel-pad{padding:18px;}
   .side-title{font-size:11.5px;letter-spacing:1.6px;text-transform:uppercase;color:var(--ink-500);font-weight:700;margin:0 0 12px;}
-  #surahSearch{
-    width:100%;padding:10px 12px;border-radius:9px;border:1px solid var(--line);font-size:13.5px;margin-bottom:14px;background:var(--cream-50);
+  #surahSearch, #haditsSearch{
+    width:100%;padding:11px 15px;border-radius:14px;border:1px solid var(--line);font-size:13.5px;margin:0 0 16px;background:var(--cream-50);
   }
   .surah-list{max-height:400px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;padding-right:2px;}
   .surah-item{
@@ -212,10 +212,18 @@
   .surah-item.soon{opacity:.45;cursor:not-allowed;}
   .juz-title{font-size:11.5px;letter-spacing:1.6px;text-transform:uppercase;color:var(--ink-500);font-weight:700;margin:20px 0 10px;}
   .juz-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;}
-  .juz-grid span{
-    display:flex;align-items:center;justify-content:center;aspect-ratio:1;border-radius:7px;
-    background:var(--cream-100);font-size:11.5px;color:var(--ink-500);font-weight:600;
+  .juz-btn{
+    display:flex;align-items:center;justify-content:center;aspect-ratio:1;border-radius:9px;border:1px solid transparent;
+    background:var(--cream-100);font-size:11.5px;color:var(--ink-500);font-weight:600;transition:.15s;position:relative;
   }
+  .juz-btn:hover{background:var(--cream-100);border-color:var(--gold-500);color:var(--emerald-800);}
+  .juz-btn.has-content{background:rgba(35,122,88,.1);color:var(--emerald-700);}
+  .juz-btn.has-content::after{
+    content:"";position:absolute;bottom:3px;left:50%;transform:translateX(-50%);
+    width:4px;height:4px;border-radius:50%;background:var(--gold-500);
+  }
+  .juz-btn.active{background:var(--emerald-800);color:#fff;border-color:var(--emerald-800);}
+  .juz-btn.active::after{background:var(--gold-400);}
 
   /* kalam hikmah slider */
   .hikmah-title{font-size:11.5px;letter-spacing:1.6px;text-transform:uppercase;color:var(--ink-500);font-weight:700;margin:22px 0 10px;display:flex;align-items:center;color:var(--gold-600);}
@@ -341,9 +349,9 @@
 
   /* right column */
   .search-box input{
-    width:100%;padding:10px 12px;border-radius:9px;border:1px solid var(--line);font-size:13.5px;background:var(--cream-50);
+    width:100%;padding:11px 15px;border-radius:14px;border:1px solid var(--line);font-size:13.5px;background:var(--cream-50);
   }
-  .search-box button{width:100%;margin-top:8px;padding:9px;border-radius:9px;border:none;background:var(--emerald-700);color:#fff;font-weight:600;font-size:13px;}
+  .search-box button{width:100%;margin-top:8px;padding:10px;border-radius:12px;border:none;background:var(--emerald-700);color:#fff;font-weight:600;font-size:13px;}
   .topic-tags{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px;}
   .topic-tags span{font-size:12px;padding:6px 11px;border-radius:999px;background:var(--cream-100);color:var(--ink-700);border:1px solid var(--line);cursor:pointer;}
   .topic-tags span:hover{background:var(--gold-400);color:var(--emerald-950);}
@@ -476,7 +484,7 @@
   .admin-stat-card b{display:block;font-family:'Cormorant Garamond',serif;font-size:2rem;color:var(--gold-400);line-height:1;}
   .admin-stat-card span{font-size:12.5px;color:rgba(250,248,242,.6);}
   .admin-toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;gap:10px;flex-wrap:wrap;}
-  .admin-toolbar input{padding:9px 12px;border-radius:8px;border:1px solid rgba(227,198,130,.3);background:rgba(255,255,255,.06);color:#fff;font-size:13px;min-width:220px;}
+  .admin-toolbar input{padding:10px 14px;border-radius:12px;border:1px solid rgba(227,198,130,.3);background:rgba(255,255,255,.06);color:#fff;font-size:13px;min-width:220px;}
   .admin-toolbar input::placeholder{color:rgba(255,255,255,.4);}
   .btn-gold{background:var(--gold-500);color:var(--emerald-950);border:none;border-radius:9px;padding:11px 18px;font-weight:700;font-size:13.5px;}
   .btn-gold:hover{background:var(--gold-400);}
@@ -495,6 +503,12 @@
   .admin-data-card h4{margin:0 0 6px;font-family:'Cormorant Garamond',serif;font-size:1.25rem;color:var(--gold-400);}
   .admin-data-card p{font-size:12.5px;color:rgba(250,248,242,.6);margin:0 0 14px;}
   .admin-data-card input[type=file]{font-size:12px;color:rgba(250,248,242,.7);margin-top:8px;}
+  .hero-bg-preview{
+    margin-top:6px;height:130px;border-radius:10px;border:1px dashed rgba(227,198,130,.35);
+    background-size:cover;background-position:center;background-color:rgba(255,255,255,.04);
+    display:flex;align-items:center;justify-content:center;color:rgba(250,248,242,.4);font-size:12.5px;
+  }
+  .hero-bg-status{margin-top:10px;font-size:12px;color:var(--gold-400);min-height:16px;}
 
   /* admin modal form */
   .admin-modal{display:none;position:fixed;inset:0;background:rgba(7,20,16,.72);z-index:300;padding:24px;overflow-y:auto;}
@@ -508,7 +522,7 @@
   .form-field.full{grid-column:1 / -1;}
   .form-field label{font-size:12px;font-weight:700;color:var(--ink-700);text-transform:uppercase;letter-spacing:.5px;}
   .form-field input, .form-field select, .form-field textarea{
-    padding:9px 11px;border-radius:8px;border:1px solid var(--line);font-size:13.5px;font-family:inherit;background:#fff;color:var(--ink-900);
+    padding:10px 13px;border-radius:12px;border:1px solid var(--line);font-size:13.5px;font-family:inherit;background:#fff;color:var(--ink-900);
   }
   .form-field textarea{resize:vertical;min-height:70px;line-height:1.5;}
   .form-field .hint{font-size:11px;color:var(--ink-500);font-weight:400;text-transform:none;letter-spacing:0;}
@@ -822,6 +836,7 @@
     <button class="admin-tab-btn" data-atab="surah" onclick="setATab('surah')">Kelola Surah</button>
     <button class="admin-tab-btn" data-atab="hadits" onclick="setATab('hadits')">Kelola Hadits</button>
     <button class="admin-tab-btn" data-atab="referensi" onclick="setATab('referensi')">Kelola Kitab</button>
+    <button class="admin-tab-btn" data-atab="tampilan" onclick="setATab('tampilan')">Tampilan</button>
     <button class="admin-tab-btn" data-atab="data" onclick="setATab('data')">Impor / Ekspor</button>
   </div>
 
@@ -857,6 +872,22 @@
     <div style="overflow-x:auto;">
       <table class="admin-table"><thead><tr><th>Nama Kitab</th><th>Penulis / Keterangan</th><th style="width:160px;">Aksi</th></tr></thead>
       <tbody id="adminRefTbody"></tbody></table>
+    </div>
+  </div>
+
+  <div class="admin-panel" data-apanel="tampilan">
+    <div class="admin-data-card" style="max-width:560px;">
+      <h4>Background Hero Banner Beranda</h4>
+      <p>Unggah gambar untuk dijadikan latar belakang bagian hero di halaman Beranda. Gambar akan otomatis dilapisi gradasi hijau-emas supaya teks tetap terbaca. Format JPG/PNG, disarankan di bawah 2MB.</p>
+      <div class="hero-bg-preview" id="heroBgPreview"></div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;">
+        <label class="btn-gold" style="cursor:pointer;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" style="margin-right:4px;vertical-align:-2px;"><path d="M12 21V9"/><path d="M7 13.5l5-5 5 5"/><path d="M4 3h16"/></svg> Unggah Gambar
+          <input type="file" accept="image/*" style="display:none" onchange="uploadHeroBg(this.files[0])">
+        </label>
+        <button class="btn-danger" onclick="removeHeroBg()">Hapus Background</button>
+      </div>
+      <div id="heroBgStatus" class="hero-bg-status"></div>
     </div>
   </div>
 
@@ -1503,6 +1534,24 @@ let savedSurah = [];
 let savedHadits = [];
 
 /* ============ RENDER: sidebar list ============ */
+/* ============ JUZ: deteksi otomatis dari nomor surah ============ */
+const JUZ_BY_SURAH = {
+  1:1, 2:1, 3:3, 4:4, 5:6, 6:7, 7:8, 8:9, 9:10, 10:11,
+  11:11, 12:12, 13:13, 14:13, 15:14, 16:14, 17:15, 18:15, 19:16, 20:16,
+  21:17, 22:17, 23:18, 24:18, 25:18, 26:19, 27:19, 28:20, 29:20, 30:21,
+  31:21, 32:21, 33:21, 34:22, 35:22, 36:22, 37:23, 38:23, 39:23, 40:24,
+  41:24, 42:25, 43:25, 44:25, 45:25, 46:26, 47:26, 48:26, 49:26, 50:26,
+  51:26, 52:27, 53:27, 54:27, 55:27, 56:27, 57:27, 58:28, 59:28, 60:28,
+  61:28, 62:28, 63:28, 64:28, 65:28, 66:28, 67:29, 68:29, 69:29, 70:29,
+  71:29, 72:29, 73:29, 74:29, 75:29, 76:29, 77:29, 78:30, 79:30, 80:30,
+  81:30, 82:30, 83:30, 84:30, 85:30, 86:30, 87:30, 88:30, 89:30, 90:30,
+  91:30, 92:30, 93:30, 94:30, 95:30, 96:30, 97:30, 98:30, 99:30, 100:30,
+  101:30, 102:30, 103:30, 104:30, 105:30, 106:30, 107:30, 108:30, 109:30, 110:30,
+  111:30, 112:30, 113:30, 114:30
+};
+function getJuzForSurah(nomor){ return JUZ_BY_SURAH[nomor] || 1; }
+let activeJuz = null;
+
 function renderSurahList(filter=""){
   const list = document.getElementById("surahList");
   list.innerHTML = "";
@@ -1512,32 +1561,48 @@ function renderSurahList(filter=""){
   const placeholders = PLACEHOLDER_SURAH.map(p=>({ key:null, nomor:p.nomor, nama:p.nama, jumlah:p.ayat, isReal:false }));
   const merged = real.concat(placeholders).sort((a,b)=> a.nomor - b.nomor);
 
+  let shown = 0;
   merged.forEach(item=>{
     if(f && !item.nama.toLowerCase().includes(f)) return;
+    if(activeJuz && getJuzForSurah(item.nomor) !== activeJuz) return;
+    shown++;
     if(item.isReal){
       const btn = document.createElement("button");
       btn.className = "surah-item" + (item.key===currentSurah ? " active" : "");
-      btn.innerHTML = `<span><span class="nm">${item.nama}${savedSurah.includes(item.key) ? ' <span class="bookmark-dot"><svg viewBox="0 0 24 24" width="10" height="10" fill="currentColor" style="vertical-align:1px;"><path d="M12 2l3 6.5 7 .9-5.2 4.9 1.4 7-6.2-3.5L5.8 21.3l1.4-7L2 9.4l7-.9L12 2Z"/></svg></span>' : ''}</span><br><span class="ct">${item.jumlah} ayat</span></span>`;
+      btn.innerHTML = `<span><span class="nm">${item.nama}${savedSurah.includes(item.key) ? ' <span class="bookmark-dot"><svg viewBox="0 0 24 24" width="10" height="10" fill="currentColor" style="vertical-align:1px;"><path d="M12 2l3 6.5 7 .9-5.2 4.9 1.4 7-6.2-3.5L5.8 21.3l1.4-7L2 9.4l7-.9L12 2Z"/></svg></span>' : ''}</span><br><span class="ct">Juz ${getJuzForSurah(item.nomor)} · ${item.jumlah} ayat</span></span>`;
       btn.onclick = ()=> selectSurah(item.key);
       list.appendChild(btn);
     } else {
       const div = document.createElement("div");
       div.className = "surah-item soon";
-      div.innerHTML = `<span><span class="nm">${item.nama}</span><br><span class="ct">${item.jumlah} ayat · segera</span></span>`;
+      div.innerHTML = `<span><span class="nm">${item.nama}</span><br><span class="ct">Juz ${getJuzForSurah(item.nomor)} · ${item.jumlah} ayat · segera</span></span>`;
       list.appendChild(div);
     }
   });
+  if(shown === 0){
+    list.innerHTML = `<div class="hadits-empty">Tidak ada surah pada filter ini.</div>`;
+  }
 }
 function filterSurah(v){ renderSurahList(v); }
 
 function renderJuz(){
   const g = document.getElementById("juzGrid");
   g.innerHTML="";
+  const availableJuz = new Set(Object.values(SURAHS).map(s=>getJuzForSurah(s.nomor)));
   for(let i=1;i<=30;i++){
-    const s = document.createElement("span");
-    s.textContent = i;
-    g.appendChild(s);
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.textContent = i;
+    btn.className = "juz-btn" + (i===activeJuz ? " active" : "") + (availableJuz.has(i) ? " has-content" : "");
+    btn.title = availableJuz.has(i) ? `Juz ${i} — ada surah tersedia` : `Juz ${i}`;
+    btn.onclick = ()=> filterByJuz(i);
+    g.appendChild(btn);
   }
+}
+function filterByJuz(n){
+  activeJuz = (activeJuz === n) ? null : n;
+  renderJuz();
+  renderSurahList(document.getElementById("surahSearch")?.value || "");
 }
 
 /* ============ KALAM HIKMAH (slider, 4 per halaman) ============ */
@@ -2031,8 +2096,91 @@ document.querySelectorAll(".mobile-drawer a").forEach(a=> a.onclick=()=> documen
 
 
 const STORAGE_KEY = "tafsir4dimensi-data";
+const HERO_BG_KEY = "tafsir4dimensi-hero-bg";
 let storageAvailable = false;
 let lastStoragePayload = null;
+let lastHeroBgPayload = null;
+let heroBgImage = null;
+
+/* ============ HERO BACKGROUND (upload gambar banner beranda) ============ */
+function applyHeroBackground(){
+  const hero = document.querySelector(".hero");
+  if(!hero) return;
+  if(heroBgImage){
+    hero.style.backgroundImage = `radial-gradient(ellipse at 15% 20%, rgba(227,198,130,.16), transparent 55%), linear-gradient(160deg, rgba(7,33,26,.88) 0%, rgba(11,51,39,.85) 45%, rgba(19,74,55,.82) 100%), url('${heroBgImage}')`;
+    hero.style.backgroundSize = "cover";
+    hero.style.backgroundPosition = "center";
+  } else {
+    hero.style.backgroundImage = "";
+    hero.style.backgroundSize = "";
+    hero.style.backgroundPosition = "";
+  }
+}
+function renderHeroBgPreview(){
+  const el = document.getElementById("heroBgPreview");
+  if(!el) return;
+  if(heroBgImage){
+    el.style.backgroundImage = `url('${heroBgImage}')`;
+    el.textContent = "";
+  } else {
+    el.style.backgroundImage = "";
+    el.textContent = "Belum ada gambar — masih pakai gradasi bawaan.";
+  }
+}
+async function uploadHeroBg(file){
+  if(!file) return;
+  const statusEl = document.getElementById("heroBgStatus");
+  if(file.size > 3 * 1024 * 1024){
+    if(statusEl) statusEl.textContent = "Ukuran gambar terlalu besar (maks. sekitar 3MB). Kompres dulu, lalu unggah lagi.";
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = async () => {
+    heroBgImage = reader.result;
+    applyHeroBackground();
+    renderHeroBgPreview();
+    if(statusEl) statusEl.textContent = "Mengunggah...";
+    if(window.storage){
+      try{
+        await window.storage.set(HERO_BG_KEY, heroBgImage, true);
+        lastHeroBgPayload = heroBgImage;
+        if(statusEl) statusEl.textContent = "✓ Background tersimpan dan langsung tampil untuk semua pengunjung.";
+      }catch(e){
+        if(statusEl) statusEl.textContent = "Gagal menyimpan ke penyimpanan bersama — coba gambar yang lebih kecil.";
+      }
+    } else {
+      if(statusEl) statusEl.textContent = "Penyimpanan tidak tersedia — background hanya berlaku selama sesi ini.";
+    }
+  };
+  reader.readAsDataURL(file);
+}
+async function removeHeroBg(){
+  heroBgImage = null;
+  applyHeroBackground();
+  renderHeroBgPreview();
+  const statusEl = document.getElementById("heroBgStatus");
+  if(window.storage){
+    try{
+      await window.storage.delete(HERO_BG_KEY, true);
+      lastHeroBgPayload = null;
+      if(statusEl) statusEl.textContent = "Background dihapus, kembali ke gradasi bawaan.";
+    }catch(e){
+      if(statusEl) statusEl.textContent = "Background dihapus di tampilan ini, namun gagal sinkron ke penyimpanan.";
+    }
+  }
+}
+async function tryLoadHeroBg(){
+  if(!window.storage) return;
+  try{
+    const res = await window.storage.get(HERO_BG_KEY, true);
+    if(res && res.value){
+      heroBgImage = res.value;
+      lastHeroBgPayload = res.value;
+      applyHeroBackground();
+      renderHeroBgPreview();
+    }
+  }catch(e){ /* belum ada background tersimpan */ }
+}
 
 /* ---- persistence ---- */
 async function tryLoadFromStorage(){
@@ -2050,13 +2198,13 @@ async function tryLoadFromStorage(){
       if(data.PLACEHOLDER_SURAH) PLACEHOLDER_SURAH = data.PLACEHOLDER_SURAH;
       if(data.REFERENSI_BUKU) REFERENSI_BUKU = data.REFERENSI_BUKU;
       if(data.HADITS) HADITS = data.HADITS;
-      if(statusEl) statusEl.innerHTML = `${ICONS.check} Data publik dimuat — semua perubahan tersimpan otomatis dan langsung terlihat oleh semua pengunjung website ini.`;
+      if(statusEl) statusEl.innerHTML = `${ICONS.check} Data publik dimuat — semua perubahan tersimpan otomatis dan diperbarui hampir seketika (real-time) ke semua pengunjung website ini.`;
     } else {
-      if(statusEl) statusEl.innerHTML = `${ICONS.check} Penyimpanan publik aktif — perubahan Anda akan otomatis tersimpan dan langsung terlihat oleh semua pengunjung.`;
+      if(statusEl) statusEl.innerHTML = `${ICONS.check} Penyimpanan publik aktif — perubahan Anda otomatis tersimpan dan diperbarui hampir seketika (real-time) ke semua pengunjung.`;
     }
     storageAvailable = true;
   }catch(e){
-    if(statusEl) statusEl.innerHTML = `${ICONS.check} Penyimpanan publik aktif — perubahan Anda akan otomatis tersimpan dan terlihat oleh semua pengunjung.`;
+    if(statusEl) statusEl.innerHTML = `${ICONS.check} Penyimpanan publik aktif — perubahan Anda otomatis tersimpan dan disinkronkan berkala ke semua pengunjung.`;
     storageAvailable = true;
   }
 }
@@ -2070,11 +2218,10 @@ async function saveToStorage(){
   }catch(e){ console.error("Gagal menyimpan:", e); }
 }
 
-/* ============ POLLING: refresh tampilan publik kalau ada pengunjung/admin lain yang mengubah data ============ */
+/* ============ POLLING: sinkron hampir real-time untuk semua pengunjung ============ */
 async function pollPublicStorage(){
   if(!window.storage) return;
   const adminOpen = document.getElementById("adminView").style.display !== "none";
-  if(adminOpen) return; // jangan ganggu proses edit yang sedang berjalan di admin
   try{
     const res = await window.storage.get(STORAGE_KEY, true);
     if(res && res.value && res.value !== lastStoragePayload){
@@ -2086,15 +2233,30 @@ async function pollPublicStorage(){
       if(data.HADITS) HADITS = data.HADITS;
       if(!SURAHS[currentSurah]) currentSurah = Object.keys(SURAHS)[0] || null;
       if(!HADITS.find(h=>h.no===currentHadits)) currentHadits = HADITS.length ? HADITS[0].no : null;
-      renderSurahList(document.getElementById("surahSearch")?.value || "");
-      renderMain();
-      renderRefGrid();
-      renderHaditsList(document.getElementById("haditsSearch")?.value || "");
-      renderHaditsMain();
+      if(!adminOpen){
+        renderSurahList(document.getElementById("surahSearch")?.value || "");
+        renderMain();
+        renderRefGrid();
+        renderHaditsList(document.getElementById("haditsSearch")?.value || "");
+        renderHaditsMain();
+      } else {
+        renderAdminSurahTable(document.getElementById("adminSurahSearch")?.value || "");
+        renderAdminHaditsTable(document.getElementById("adminHaditsSearch")?.value || "");
+        renderAdminRefTable(document.getElementById("adminRefSearch")?.value || "");
+        renderAdminOverview();
+      }
+    }
+    const hbg = await window.storage.get(HERO_BG_KEY, true);
+    const hbgVal = (hbg && hbg.value) ? hbg.value : null;
+    if(hbgVal !== lastHeroBgPayload){
+      lastHeroBgPayload = hbgVal;
+      heroBgImage = hbgVal;
+      applyHeroBackground();
+      renderHeroBgPreview();
     }
   }catch(e){ /* diamkan, coba lagi di polling berikutnya */ }
 }
-setInterval(pollPublicStorage, 20000);
+setInterval(pollPublicStorage, 4000);
 
 function refreshEverything(){
   renderSurahList(document.getElementById("surahSearch")?.value || "");
@@ -2106,6 +2268,7 @@ function refreshEverything(){
   renderAdminSurahTable(document.getElementById("adminSurahSearch")?.value || "");
   renderAdminHaditsTable(document.getElementById("adminHaditsSearch")?.value || "");
   renderAdminRefTable(document.getElementById("adminRefSearch")?.value || "");
+  renderHeroBgPreview();
 }
 
 /* ---- admin tabs ---- */
@@ -2582,7 +2745,9 @@ function logoutAdmin(){
   renderHaditsList();
   renderHaditsMain();
   renderAdminOverview();
+  renderHeroBgPreview();
   await tryLoadFromStorage();
+  await tryLoadHeroBg();
   refreshEverything();
   if(location.hash === "#admin"){ showAdminView(); }
 })();
